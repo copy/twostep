@@ -1,8 +1,4 @@
-module Int = Base.Int
-module String = Base.String
-module Char = Base.Char
-
-let __nullchar = Char.of_int_exn 0
+let __nullchar = Char.chr 0
 
 type padding =
   | OnLeft

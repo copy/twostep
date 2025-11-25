@@ -100,7 +100,7 @@ module HOTP : IHOTP = struct
 
   let code ~digits ~hash ~counter ~secret () =
     let decoded = Base32.base32_to_string secret in
-    let counter = Base.Int64.of_int counter in
+    let counter = Int64.of_int counter in
     let counter' =
       Mirage_crypto_pk.Z_extra.to_octets_be ~size:8
       @@ Z.of_int64 counter
@@ -112,7 +112,7 @@ module HOTP : IHOTP = struct
   let codes ?(digits = 6) ?(hash = `Sha1) ?(amount = 1) ~counter ~secret () =
     assert (amount >= 1) ;
     let step index = code ~digits ~hash ~counter:(counter + index) ~secret () in
-    Base.List.init amount ~f:step
+    List.init amount step
 
 
   let verify
@@ -124,8 +124,8 @@ module HOTP : IHOTP = struct
       ~codes:numbers
       () =
     assert (ahead >= 0) ;
-    assert (Base.List.length numbers >= 1) ;
-    let amount = Base.List.length numbers in
+    assert (List.length numbers >= 1) ;
+    let amount = List.length numbers in
     let step index =
       let valid =
         numbers
@@ -134,7 +134,7 @@ module HOTP : IHOTP = struct
       let next = counter + index + amount in
       (valid, next)
     in
-    let results = Base.List.init (ahead + 1) ~f:step in
+    let results = List.init (ahead + 1) step in
     let folding previous current =
       if fst previous
       then previous

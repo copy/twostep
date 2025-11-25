@@ -2,10 +2,6 @@ module S1 = Digestif.SHA1
 module S2 = Digestif.SHA256
 module S5 = Digestif.SHA512
 
-let of_string = Cstruct.of_string
-
-let to_string = Cstruct.to_string
-
 let hmac_sha1 ~secret payload =
   S1.to_raw_string @@ S1.hmac_string ~key:secret payload
 

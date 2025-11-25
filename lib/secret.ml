@@ -8,6 +8,3 @@ let generate ~bytes () =
       ( "Invalid amount of bytes ("
       ^ string_of_int bytes
       ^ ") for secret, it must be at least 10 and divisible by 5!" )
-
-
-let _ = Mirage_crypto_rng_unix.use_default ()

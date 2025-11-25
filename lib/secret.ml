@@ -2,7 +2,7 @@ let __random_bytes bytes = Mirage_crypto_rng.generate bytes
 
 let generate ~bytes () =
   if bytes >= 10 && bytes mod 5 == 0
-  then Base32.string_to_base32 @@ __random_bytes bytes
+  then Base32.encode_exn @@ __random_bytes bytes
   else
     failwith
       ( "Invalid amount of bytes ("

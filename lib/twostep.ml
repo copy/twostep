@@ -5,8 +5,6 @@ module Internals = struct
 
   let hmac = Hmac.hmac
 
-  let base32_to_string = Base32.base32_to_string
-
   type padding = Helpers.padding
 
   let pad = Helpers.pad
@@ -59,7 +57,7 @@ module TOTP : ITOTP = struct
   let code
       ?(window = 30) ?(drift = 0) ?(digits = 6) ?(hash = `Sha1) ~secret () =
     assert (digits = 6 || digits = 8) ;
-    let decoded = Base32.base32_to_string secret in
+    let decoded = Base32.decode_exn secret in
     let counter = Time.counter ~timestep:window ~drift () in
     let image = Hmac.hmac ~hash ~secret:decoded counter in
     Internals.truncate ~image ~digits
@@ -99,7 +97,7 @@ module HOTP : IHOTP = struct
   let secret ?(bytes = 10) () = Secret.generate ~bytes ()
 
   let code ~digits ~hash ~counter ~secret () =
-    let decoded = Base32.base32_to_string secret in
+    let decoded = Base32.decode_exn secret in
     let counter = Int64.of_int counter in
     let counter' =
       Mirage_crypto_pk.Z_extra.to_octets_be ~size:8

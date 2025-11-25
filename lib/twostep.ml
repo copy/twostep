@@ -14,19 +14,13 @@ module Internals = struct
   let padOnRight = Helpers.padOnRight
 
   let truncate ~image ~digits =
-    let bytes =
-      Base.List.map ~f:Base.Char.to_int @@ Base.String.to_list image
-    in
-    let offset =
-      Base.List.nth_exn bytes (Base.List.length bytes - 1) land 0xf
-    in
-    let fst = (Base.List.nth_exn bytes (offset + 0) land 0x7f) lsl 24 in
-    let snd = (Base.List.nth_exn bytes (offset + 1) land 0xff) lsl 16 in
-    let trd = (Base.List.nth_exn bytes (offset + 2) land 0xff) lsl 8 in
-    let fth = (Base.List.nth_exn bytes (offset + 3) land 0xff) lsl 0 in
-    let num = fst lor snd lor trd lor fth mod Base.Int.pow 10 digits in
+    let offset = String.get_uint8 image (String.length image - 1) land 0xf in
+    let base = Int32.to_int @@ Int32.logand (String.get_int32_be image offset) 0x7FFF_FFFFl in
+    assert (digits = 6 || digits = 8);
+    let modulo = if digits = 6 then 1_000_000 else 100_000_000 in
+    let num = base mod modulo in
     Helpers.pad ~basis:digits ~byte:'0' ~direction:Helpers.OnLeft
-    @@ Base.Int.to_string num
+    @@ Int.to_string num
 end
 
 module type ITOTP = sig
@@ -141,5 +135,5 @@ module HOTP : IHOTP = struct
       else (false, counter)
     in
     let invalid = (false, counter) in
-    Base.List.fold_left results ~init:invalid ~f:folding
+    List.fold_left folding invalid results
 end

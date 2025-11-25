@@ -1,3 +1,5 @@
+type hash = [`Sha1 | `Sha256 | `Sha512]
+
 module Internals = struct
   let counter = Time.counter
 
@@ -36,7 +38,7 @@ module type ITOTP = sig
        ?window:int
     -> ?drift:int
     -> ?digits:int
-    -> ?hash:string
+    -> ?hash:hash
     -> secret:string
     -> unit
     -> string
@@ -44,7 +46,7 @@ module type ITOTP = sig
   val verify :
        ?window:int
     -> ?digits:int
-    -> ?hash:string
+    -> ?hash:hash
     -> secret:string
     -> code:string
     -> unit
@@ -55,7 +57,7 @@ module TOTP : ITOTP = struct
   let secret ?(bytes = 10) () = Secret.generate ~bytes ()
 
   let code
-      ?(window = 30) ?(drift = 0) ?(digits = 6) ?(hash = "SHA-1") ~secret () =
+      ?(window = 30) ?(drift = 0) ?(digits = 6) ?(hash = `Sha1) ~secret () =
     assert (digits = 6 || digits = 8) ;
     let decoded = Base32.base32_to_string secret in
     let counter = Time.counter ~timestep:window ~drift () in
@@ -64,7 +66,7 @@ module TOTP : ITOTP = struct
 
 
   let verify
-      ?(window = 30) ?(digits = 6) ?(hash = "SHA-1") ~secret ~code:number () =
+      ?(window = 30) ?(digits = 6) ?(hash = `Sha1) ~secret ~code:number () =
     number = code ~secret ~window ~digits ~hash ~drift:(-1) ()
     || number = code ~secret ~window ~digits ~hash ~drift:0 ()
     || number = code ~secret ~window ~digits ~hash ~drift:1 ()
@@ -75,7 +77,7 @@ module type IHOTP = sig
 
   val codes :
        ?digits:int
-    -> ?hash:string
+    -> ?hash:hash
     -> ?amount:int
     -> counter:int
     -> secret:string
@@ -84,7 +86,7 @@ module type IHOTP = sig
 
   val verify :
        ?digits:int
-    -> ?hash:string
+    -> ?hash:hash
     -> ?ahead:int
     -> counter:int
     -> secret:string
@@ -107,7 +109,7 @@ module HOTP : IHOTP = struct
     Internals.truncate ~image ~digits
 
 
-  let codes ?(digits = 6) ?(hash = "SHA-1") ?(amount = 1) ~counter ~secret () =
+  let codes ?(digits = 6) ?(hash = `Sha1) ?(amount = 1) ~counter ~secret () =
     assert (amount >= 1) ;
     let step index = code ~digits ~hash ~counter:(counter + index) ~secret () in
     Base.List.init amount ~f:step
@@ -115,7 +117,7 @@ module HOTP : IHOTP = struct
 
   let verify
       ?(digits = 6)
-      ?(hash = "SHA-1")
+      ?(hash = `Sha1)
       ?(ahead = 0)
       ~counter
       ~secret

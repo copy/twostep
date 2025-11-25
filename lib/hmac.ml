@@ -14,22 +14,11 @@ let hmac_sha512 ~secret payload =
   S5.to_raw_string @@ S5.hmac_string ~key:secret payload
 
 
-let no_trace char = char != '-'
-
 let hmac ~hash =
-  let algorithm =
-    hash
-    |> Base.String.lowercase
-    |> Base.String.to_list
-    |> Base.List.filter ~f:no_trace
-    |> Base.String.of_char_list
-  in
-  match algorithm with
-  | "sha1" ->
+  match hash with
+  | `Sha1 ->
       hmac_sha1
-  | "sha256" ->
+  | `Sha256 ->
       hmac_sha256
-  | "sha512" ->
+  | `Sha512 ->
       hmac_sha512
-  | _ ->
-      failwith ("Invalid hash algorithm: " ^ hash)

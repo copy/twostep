@@ -3,6 +3,8 @@
     @version 1.0.1
 *)
 
+type hash = [`Sha1 | `Sha256 | `Sha512]
+
 (**
   Pay attention that this library doesn't persist any HOTP counters neither tracks
   authenticated/verified valid OTP codes to protect against replay attacks. It's
@@ -31,7 +33,7 @@ module TOTP : sig
        ?window:int
     -> ?drift:int
     -> ?digits:int
-    -> ?hash:string
+    -> ?hash:hash
     -> secret:string
     -> unit
     -> string
@@ -42,14 +44,14 @@ module TOTP : sig
     to [0], non-zero values are used mostly for custom verification, but it's not recommended that use. Instead, rely
     on [TOTP.verify] operation, which attempts to verify with clock drifts [-1], [0] and [1] (30 seconds on past, now and
     30 seconds on future, assuming that [window] is [30] seconds). Remaining optional parameters [digits] and [hash] are
-    used to configure the token size (defaults to [6] characters) and HMAC hash (defaults to ["SHA-1"], ["SHA-256"] and
-    ["SHA-512"] are available too), respectively.
+    used to configure the token size (defaults to [6] characters) and HMAC hash (defaults to [`Sha1], [`Sha256] and
+    [`Sha512] are available too), respectively.
   *)
 
   val verify :
        ?window:int
     -> ?digits:int
-    -> ?hash:string
+    -> ?hash:hash
     -> secret:string
     -> code:string
     -> unit
@@ -58,7 +60,7 @@ module TOTP : sig
     Operation to verify TOTP codes. Optional parameters are [window]
     (how much seconds to expire the TOTP code/token, defaults to [30] seconds),
     [digits] (number of code/token characters, defaults to [6]) and [hash]
-    (hash algorithm for internal HMAC, defaults to ["SHA-1"], other options are ["SHA-256"] and ["SHA-512"]).
+    (hash algorithm for internal HMAC, defaults to [`Sha1], other options are [`Sha256] and [`Sha512]).
     The required [secret] parameter must be a valid Base-32 string, under the same format of [TOTP.secret()]
     operation. Returns a boolean flag for authentication/proof ([true] for valid token, [false] for invalid one).
   *)
@@ -87,7 +89,7 @@ module HOTP : sig
 
   val codes :
        ?digits:int
-    -> ?hash:string
+    -> ?hash:hash
     -> ?amount:int
     -> counter:int
     -> secret:string
@@ -97,13 +99,13 @@ module HOTP : sig
     Generates a sequence of HOTP tokens/codes with length [amount] (defaults to [1]),
     where every code string has the size of optional parameter [digits] (defaults to [6]).
     The optional parameter [secret] must be a valid Base-32 string and [counter] is
-    possibly retrieved from some storage. The default [hash] algorithm is ["SHA-1"], but
-    the hashes ["SHA-256"] and ["SHA-512"] also work.
+    possibly retrieved from some storage. The default [hash] algorithm is [`Sha1], but
+    the hashes [`Sha256] and [`Sha512] also work.
   *)
 
   val verify :
        ?digits:int
-    -> ?hash:string
+    -> ?hash:hash
     -> ?ahead:int
     -> counter:int
     -> secret:string
@@ -116,7 +118,7 @@ module HOTP : sig
     differ from client's counter, so it attempts to sync-in by incrementing the counter),
     [digits] of every HOTP string code
     (defaults to [6]) and underlying [hash] algorithm for internal HMAC (defaults to
-    ["SHA-1"], values ["SHA-256"] and ["SHA-512"] are also accepted). The [secret] parameter
+    [`Sha1], values [`Sha256] and [`Sha512] are also accepted). The [secret] parameter
     must be a valid Base-32 secret. The [counter] is a nonce persisted on storage for given
     end-user. A non-empty list of [codes] provided by the client/end-user is a sequence generated
     with counters applied in an incremental way for every code.
@@ -133,7 +135,7 @@ module Internals : sig
   val counter :
     ?timestep:int -> ?drift:int -> ?timestamp:(unit -> int64) -> unit -> string
 
-  val hmac : hash:string -> secret:string -> string -> string
+  val hmac : hash:hash -> secret:string -> string -> string
 
   val base32_to_string : string -> string
 

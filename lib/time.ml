@@ -8,5 +8,4 @@ let counter ?(timestep = 30) ?(drift = 0) ?(timestamp = __unix_time) () =
   let ctr =
     Int64.add add @@ Int64.div now @@ Int64.of_int timestep
   in
-  Mirage_crypto_pk.Z_extra.to_octets_be ~size:8
-  @@ Z.of_int64 ctr
+  Helpers.int64_to_octets_be ctr

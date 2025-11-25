@@ -4,5 +4,4 @@
  (synopsis "HOTP and TOTP algorithms for 2-step verification (for OCaml)")
  (instrumentation
   (backend bisect_ppx))
- (libraries digestif mirage-crypto mirage-crypto-pk mirage-crypto-rng
-   mirage-crypto-rng.unix))
+ (libraries digestif mirage-crypto-rng))
